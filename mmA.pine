@@ -1,0 +1,116 @@
+//@version=5
+indicator(title="Multiple Moving Averages", shorttitle="mmA", overlay=true, timeframe="", timeframe_gaps=true)
+
+len5 = input.int(5, minval=1, title="Length")
+len7 = input.int(7, minval=1, title="Length")
+len8 = input.int(8, minval=1, title="Length")
+len13 = input.int(13, minval=1, title="Length")
+len20 = input.int(20, minval=1, title="Length")
+len50 = input.int(50, minval=1, title="Length")
+len100 = input.int(100, minval=1, title="Length")
+len200 = input.int(200, minval=1, title="Length")
+
+//EMA
+emalen5 = input.int(5, minval=1, title="Length")
+emalen8 = input.int(8, minval=1, title="Length")
+emalen13 = input.int(13, minval=1, title="Length")
+emalen21 = input.int(21, minval=1, title="Length")
+emalen34 = input.int(34, minval=1, title="Length")
+emalen55 = input.int(55, minval=1, title="Length")
+emalen89 = input.int(89, minval=1, title="Length")
+emalen144 = input.int(144, minval=1, title="Length")
+//EMA
+
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500)
+
+closedPrice = src
+
+out5 = ta.sma(src, len5)
+out7 = ta.sma(src, len7)
+out8 = ta.sma(src, len8)
+out13 = ta.sma(src, len13)
+out20 = ta.sma(src, len20)
+out50 = ta.sma(src, len50)
+out100 = ta.sma(src, len100)
+out200 = ta.sma(src, len200)
+
+//OUT emaS
+outEma5 = ta.ema(src, emalen5)
+outEma8 = ta.ema(src, emalen8)
+outEma13 = ta.ema(src, emalen13)
+outEma21 = ta.ema(src, emalen21)
+outEma34 = ta.ema(src, emalen34)
+outEma55 = ta.ema(src, emalen55)
+outEma89 = ta.ema(src, emalen89)
+outEma144 = ta.ema(src, emalen144)
+
+plot(outEma5, color=color.white, title="EMA 5", offset=offset, display=display.none)
+plot(outEma8, color=color.rgb(255, 13, 174), title="EMA 8", offset=offset, display=display.none)
+plot(outEma13, color=color.teal, title="EMA 13", offset=offset, display=display.none)
+plot(outEma21, color=color.blue, title="EMA 21", offset=offset, display=display.none)
+plot(outEma34, color=color.orange, title="EMA 34", offset=offset, display=display.none)
+plot(outEma55, color=color.yellow, title="EMA 55", offset=offset, display=display.none)
+plot(outEma89, color=color.red, title="EMA 89", offset=offset, display=display.none)
+plot(outEma144, color=color.purple, title="EMA 144", offset=offset, display=display.none)
+//Out emaS
+
+plot(out7, color=color.white, title="MA 7", offset=offset, display=display.none)
+plot(out20, color=color.blue, title="MA 20", offset=offset, display=display.none)
+plot(out50, color=color.yellow, title="MA 50", offset=offset, display=display.none)
+plot(out100, color=color.red, title="MA 100", offset=offset, display=display.none)
+plot(out200, color=color.purple, title="MA 200", offset=offset, display=display.none)
+
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+typeMA = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
+smoothingLength = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing")
+
+longCondGolderCross = ta.crossover(out50, out200)
+shortCondDeathCross = ta.crossunder(out50, out200)
+
+//EMA Signals
+buyCond = ta.crossover(outEma5, outEma13)
+buyCondStrong = ta.crossover(outEma13, outEma21)
+buyCondStrong58 = ta.crossover(outEma5, outEma8)
+buyCondStrong513 = ta.crossover(outEma5, outEma13)
+
+//SMA Signals
+buyCondStrongSma58 = ta.crossover(out5, out8)
+buyCondStrongSma513 = ta.crossover(out5, out13)
+
+plotshape(series=buyCond, title="EMA 5,13 Buy Crossing", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲', textcolor=color.white, size=size.auto, display=display.none)
+plotshape(series=buyCondStrong, title="EMA 13,21 Buy Crossing", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲▲', textcolor=color.white, size=size.auto, display=display.none)
+
+//5-8-13
+plotshape(series=buyCondStrong58 and buyCondStrong513, title="EMA 5,8,13 Buy Crossing", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲ EMA-3', textcolor=color.white, size=size.auto, display=display.none)
+plotshape(series=buyCondStrongSma58 and buyCondStrongSma513, title="SMA 5,8,13 Buy Crossing", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲ SMA-3', textcolor=color.white, size=size.auto, display=display.none)
+//Ema Signals
+
+plotshape(series=longCondGolderCross, title="Golden Cross", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲', textcolor=color.white, size=size.auto, display=display.none)
+plotshape(series=shortCondDeathCross, title="Death Cross", style=shape.labelup, location=location.abovebar, color=color.red, offset=0, text='▼', textcolor=color.white, size=size.auto, display=display.none)
+
+//alertcondition(buyCondStrong, title="Strong Long", message="Strong Long")
+
+//Bollinger Bands
+//dailyStd = request.security(syminfo.tickerid,"D",ta.stdev(src,len20))
+//piv=open
+bollingerBand = input.bool(true, title="Bollinger Band")
+StandartDevInput = input.float(defval=2.0, minval=0.001, maxval=50, title="Bollinger Band Standart Sapma")
+stdDev = StandartDevInput * ta.stdev(src, len20)
+bollingerBandResistance = out20 + stdDev
+bollingerBandSupport = out20 - stdDev
+plot(bollingerBand ? out20 :na, title="Bollinger Orta Band", color=color.blue, trackprice = true, linewidth=2)
+plotStdResistance = plot(bollingerBand ? bollingerBandResistance :na, title="Bollinger Üst Band",color=color.red, trackprice=false, linewidth=1, offset = offset)
+plotStdSupport = plot(bollingerBand ? bollingerBandSupport :na, title="Bollinger Alt Band", color=color.green, trackprice=true, linewidth=1, offset = offset)
+fill(plotStdResistance, plotStdSupport, color=color.rgb(179, 179, 179, 97), title="Bollinger Band Arka Plan", editable=true, fillgaps=true, display=display.all)
+//
+
+//smoothingLine = ma(out, smoothingLength, typeMA)
+//plot(smoothingLine, title="Smoothing Line", color=#f37f20, offset=offset, display=display.none)
