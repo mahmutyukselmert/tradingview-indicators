@@ -1,0 +1,17 @@
+//@version=5
+indicator(title="Golden & Death Crossinngs", shorttitle="GDC", overlay=true, timeframe="", timeframe_gaps=true)
+
+len50 = input.int(50, minval=1, title="MA 50")
+len200 = input.int(200, minval=1, title="MA 200")
+
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500)
+
+out50 = ta.sma(src, len50)
+out200 = ta.sma(src, len200)
+
+longCond = ta.crossover(out50, out200)
+shortCond = ta.crossunder(out50, out200)
+
+plotshape(series=longCond, title="Golden Cross", style=shape.labelup, location=location.belowbar, color=color.green, offset=0, text='▲', textcolor=color.white, size=size.auto, display=display.none)
+plotshape(series=shortCond, title="Death Cross", style=shape.labelup, location=location.abovebar, color=color.red, offset=0, text='▼', textcolor=color.white, size=size.auto, display=display.none)
